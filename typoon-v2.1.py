@@ -13,25 +13,44 @@ def xavier_init(n_inputs, n_outputs, uniform = True):
         return tf.truncated_normal_initializer(stddev=stddev)
 
 
+def MinMaxScaler(data):
+    numerator = data - np.min(data, 0)
+    denominator = np.max(data, 0) - np.min(data, 0)
+    # noise term prevents the zero division
+    return numerator / (denominator + 1e-7)
 
 xy = np.loadtxt('./data/x.csv', delimiter=',', dtype=np.float32)
+# hPa_data = MinMaxScaler(np.transpose(xy[:,0:-3]))
+# x_data = np.transpose(xy[:, -3:-1])
+# x_data = np.append(hPa_data, x_data)
 x_data = xy[:, 0:-1]
 y_data = xy[:, [-1]]
 
+# print(hPa_data)
+# print(hPa_data.shape)
+# print(x_data.shape)
+# x_data = np.append(hPa_data, x_data)
+# print(x_data)
+# print(x_data.shape)
+# print(tf.Session().run(x_data))
+# x_data = np.append(hPa_data, x_data)
+# print('x_data',x_data)
+
 # print(x_data.shape, y_data.shape)
+x_num = 27
 nb_classes = 25
 
-X = tf.placeholder(tf.float32, [None, 26])
+X = tf.placeholder(tf.float32, [None, x_num])
 Y = tf.placeholder(tf.int32, [None, 1])
 Y_one_hot = tf.one_hot(Y, nb_classes)
 # print("one_hot", Y_one_hot)
 Y_one_hot = tf.reshape(Y_one_hot, [-1, nb_classes])
 # print("reshape", Y_one_hot)
 
-W1 = tf.Variable(tf.random_uniform([26,50], -100.0, 1.0), name='W1')
-W2 = tf.get_variable("W2", shape=[50, 50], initializer=xavier_init(51,51))
-W3 = tf.Variable(tf.random_normal([50, 50], name='W3'))
-W4 = tf.get_variable("W4", shape=[50, nb_classes], initializer=xavier_init(51,nb_classes))
+W1 = tf.get_variable("W1", shape=[x_num, 50], initializer=xavier_init(26,50))
+W2 = tf.get_variable("W2", shape=[50, 50], initializer=xavier_init(50,50))
+W3 = tf.get_variable("W3", shape=[50, 50], initializer=xavier_init(50,50))
+W4 = tf.get_variable("W4", shape=[50, nb_classes], initializer=xavier_init(50,nb_classes))
 
 b1 = tf.Variable(tf.zeros([50]))
 b2 = tf.Variable(tf.zeros([50]))
@@ -53,7 +72,7 @@ hypothesis = tf.nn.softmax(logits)
 # Cross entropy cost/loss
 cost_i = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y_one_hot)
 cost = tf.reduce_mean(cost_i)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.5).minimize(cost)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.01).minimize(cost)
 
 prediction = tf.argmax(hypothesis, 1)
 correct_prediction = tf.equal(prediction, tf.argmax(Y_one_hot, 1))
@@ -62,9 +81,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
-    for step in range(1000000):
+    for step in range(100000):
         sess.run(optimizer, feed_dict={X: x_data, Y: y_data})
-        if 0 == step % 10000:
+        if 0 == step % 5000:
             loss, acc = sess.run([cost, accuracy], feed_dict={X: x_data, Y: y_data})
             print("Step: {:5}\tLoss: {:.3f}\tAcc: {:.2%}".format(step, loss, acc))
 
