@@ -81,9 +81,9 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
-    for step in range(100000):
+    for step in range(10000):
         sess.run(optimizer, feed_dict={X: x_data, Y: y_data})
-        if 0 == step % 5000:
+        if 0 == step % 500:
             loss, acc = sess.run([cost, accuracy], feed_dict={X: x_data, Y: y_data})
             print("Step: {:5}\tLoss: {:.3f}\tAcc: {:.2%}".format(step, loss, acc))
 

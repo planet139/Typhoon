@@ -18,16 +18,17 @@ x_data = xy[:, 0:-1]
 y_data = xy[:, [-1]]
 
 # print(x_data.shape, y_data.shape)
+x_num = 27
 nb_classes = 25
 
-X = tf.placeholder(tf.float32, [None, 27])
+X = tf.placeholder(tf.float32, [None, x_num])
 Y = tf.placeholder(tf.int32, [None, 1])
 Y_one_hot = tf.one_hot(Y, nb_classes)
 # print("one_hot", Y_one_hot)
 Y_one_hot = tf.reshape(Y_one_hot, [-1, nb_classes])
 # print("reshape", Y_one_hot)
 
-W1 = tf.Variable(tf.random_uniform([27,50], -10.0, 1.0), name='W1')
+W1 = tf.Variable(tf.random_uniform([x_num,50], -10.0, 1.0), name='W1')
 W2 = tf.get_variable("W2", shape=[50, 50], initializer=xavier_init(51,51))
 W3 = tf.Variable(tf.random_normal([50, 50], name='W3'))
 W4 = tf.get_variable("W4", shape=[50, nb_classes], initializer=xavier_init(51,nb_classes))
