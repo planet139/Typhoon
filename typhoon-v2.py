@@ -1,88 +1,63 @@
 import tensorflow as tf
 import numpy as np
 
-tf.set_random_seed(777)
 
-def xavier_init(n_inputs, n_outputs, uniform = True):
+tf.set_random_seed(777)
+def xavier_init(n_inputs, n_outputs):
     if uniform:
         init_range = tf.sqrt(6.0/ (n_inputs + n_outputs))
         return tf.random_uniform_initializer(-init_range, init_range)
 
-    else:
-        stddev = tf.sqrt(3.0 / (n_inputs + n_outputs))
-        return tf.truncated_normal_initializer(stddev=stddev)
 
+xy = np.loadtxt('train.csv', delimiter=',', dtype=np.float32)
+x_training_data = xy[:, 0:-1]
+y_training_data = xy[:, [-1]]
 
-xy = np.loadtxt('xx.csv', delimiter=',', dtype=np.float32)
-# hPa_data = MinMaxScaler(np.transpose(xy[:,0:-3]))
-# x_data = np.transpose(xy[:, -3:-1])
-# x_data = np.append(hPa_data, x_data)
-x_data = xy[:, 0:-1]
-y_data = xy[:, [-1]]
-
-# print(hPa_data)
-# print(hPa_data.shape)
-# print(x_data.shape)
-# x_data = np.append(hPa_data, x_data)
-# print(x_data)
-# print(x_data.shape)
-# print(tf.Session().run(x_data))
-# x_data = np.append(hPa_data, x_data)
-# print('x_data',x_data)
-
-# print(x_data.shape, y_data.shape)
 x_arg = 3
-nb_classes = 400
+location = 400
 
 X = tf.placeholder(tf.float32, [None, x_arg])
 Y = tf.placeholder(tf.int32, [None, 1])
-Y_one_hot = tf.one_hot(Y, nb_classes)
-# print("one_hot", Y_one_hot)
-Y_one_hot = tf.reshape(Y_one_hot, [-1, nb_classes])
-# print("reshape", Y_one_hot)
+Y_one_hot = tf.one_hot(Y, location)
+Y_one_hot = tf.reshape(Y_one_hot, [-1, location])
 
 W1 = tf.get_variable("W1", shape=[x_arg, 100], initializer=xavier_init(x_arg,100))
 W2 = tf.get_variable("W2", shape=[100, 200], initializer=xavier_init(100,200))
 W3 = tf.get_variable("W3", shape=[200, 300], initializer=xavier_init(200,300))
-W4 = tf.get_variable("W4", shape=[300, nb_classes], initializer=xavier_init(300,nb_classes))
+W4 = tf.get_variable("W4", shape=[300, location], initializer=xavier_init(300,location))
 
 b1 = tf.Variable(tf.zeros([100]))
 b2 = tf.Variable(tf.zeros([200]))
 b3 = tf.Variable(tf.zeros([300]))
-b4 = tf.Variable(tf.zeros([nb_classes]))
+b4 = tf.Variable(tf.zeros([location]))
 
-_L2 = tf.nn.relu(tf.add(tf.matmul(X, W1),b1))
-# L2 = tf.nn.dropout(_L2, dropout_rate)
-_L3 = tf.nn.relu(tf.add(tf.matmul(_L2, W2),b2))
-# L3 = tf.nn.dropout(_L3, dropout_rate)
-_L4 = tf.nn.relu(tf.add(tf.matmul(_L3, W3),b3))
-# L4 = tf.nn.dropout(_L4, dropout_rate)
-logits = tf.add(tf.matmul(_L4, W4), b4)
-
-# tf.nn.softmax computes softmax activations
-# softmax = exp(logits) / reduce_sum(exp(logits), dim)
+L2 = tf.nn.relu(tf.add(tf.matmul(X, W1),b1))
+L3 = tf.nn.relu(tf.add(tf.matmul(L2, W2),b2))
+L4 = tf.nn.relu(tf.add(tf.matmul(L3, W3),b3))
+logits = tf.add(tf.matmul(L4, W4), b4)
 hypothesis = tf.nn.softmax(logits)
 
 # Cross entropy cost/loss
 cost_i = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y_one_hot)
 cost = tf.reduce_mean(cost_i)
-optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0005).minimize(cost)
+optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.001).minimize(cost)
 
 prediction = tf.argmax(hypothesis, 1)
 correct_prediction = tf.equal(prediction, tf.argmax(Y_one_hot, 1))
 accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
+
 # Launch graph
 with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
 
-    for step in range(30000):
-        sess.run(optimizer, feed_dict={X: x_data, Y: y_data})
+    for step in range(20000):
+        sess.run(optimizer, feed_dict={X: x_training_data, Y: y_training_data})
         if 0 == step % 5000:
             loss, acc = sess.run([cost, accuracy], feed_dict={X: x_data, Y: y_data})
             print("Step: {:5}\tLoss: {:.3f}\tAcc: {:.2%}".format(step, loss, acc))
 
-    # Let's see if we can predict
     pred = sess.run(prediction, feed_dict={X:x_data})
+
     # y_data: (N,1) = flatten => (N, ) matches pred.shape
     for p, y in zip(pred, y_data.flatten()):
         print("[{}] Prediction: {} True Y: {}".format(p == int(y), p, int(y)))
