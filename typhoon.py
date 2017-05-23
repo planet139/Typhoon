@@ -129,6 +129,11 @@ for i in sp:
     i.legend(loc=0)
     number += 1
 
+sp1.title.set_text('2004 07 02')
+sp2.title.set_text('2007 09 16')
+sp3.title.set_text('2010 08 29')
+sp4.title.set_text('2010 09 03')
+
 plt.xlim((120,140))
 plt.ylim((20,40))
 plt.grid()
