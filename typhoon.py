@@ -7,18 +7,34 @@ def xavier_init(n_inputs, n_outputs):
     init_range = tf.sqrt(6.0/ (n_inputs + n_outputs))
     return tf.random_uniform_initializer(-init_range, init_range)
 
+<<<<<<< HEAD
 X_ARG = 3
 LOCATION = 400
 TEST_SET = 4
 
 xy = np.loadtxt('train.csv', delimiter=',', dtype=np.float32)
+=======
+X_ARG = 4
+LOCATION = 400
+TEST_SET = 5
+
+xy = np.loadtxt('train.csv', delimiter=',', dtype=np.float32)
+
+# 표준화
+for i in range(0,4):
+    xy[:,i]=np.divide(xy[:,i] - np.mean(xy[:,i]), np.std(xy[:,i]))
+>>>>>>> origin/master
 x_training_data = xy[:-TEST_SET, :-1]
 y_training_data = xy[:-TEST_SET, [-1]]
 x_testing_data = xy[-TEST_SET:, :-1]
 y_testing_data = xy[-TEST_SET:, [-1]]
 
 # delete arr, obj, axis(row=0, col=1)
+<<<<<<< HEAD
 # x_training_data=np.delete(x_training_data, 0, 1)
+=======
+# x_training_data=np.delete(x_training_data, 1, 1)
+>>>>>>> origin/master
 
 X = tf.placeholder(tf.float32, [None, X_ARG])
 Y = tf.placeholder(tf.int32, [None, 1])
@@ -53,6 +69,10 @@ with tf.name_scope("Layer3") as scope:
     b3_hist = tf.summary.histogram("bias3", b3)
     hypothesis_hist = tf.summary.histogram("hypothesis", hypothesis)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 # Cross entropy cost/loss
 with tf.name_scope("cost") as scope:
     cost_i = tf.nn.softmax_cross_entropy_with_logits(logits=logits, labels=Y_one_hot)
@@ -62,7 +82,12 @@ with tf.name_scope("cost") as scope:
     cost_hist = tf.summary.histogram("cost_hist", cost)
 
 with tf.name_scope("train") as scope:
+<<<<<<< HEAD
     optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0007).minimize(cost)
+=======
+    optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.0008).minimize(cost)
+
+>>>>>>> origin/master
 
 # Accuracy compute
 prediction = tf.argmax(hypothesis, 1)
@@ -71,11 +96,16 @@ accuracy = tf.reduce_mean(tf.cast(correct_prediction, tf.float32))
 acc_summ = tf.summary.scalar("accuracy", accuracy)
 
 # Launch graph
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/master
 temp = []
 for i in range(7):
     temp.append([])
 
 with tf.Session() as sess:
+<<<<<<< HEAD
         # merged_summary = tf.summary.merge_all()
         # writer = tf.summary.FileWriter("./logs/x")
         # writer.add_graph(sess.graph)
@@ -86,6 +116,17 @@ with tf.Session() as sess:
             sess.run(optimizer, feed_dict={X: x_training_data, Y: y_training_data})
             # writer.add_summary(summary, global_step=step)
             if 0 == step % 100:
+=======
+        merged_summary = tf.summary.merge_all()
+        writer = tf.summary.FileWriter("./logs/x")
+        writer.add_graph(sess.graph)
+        sess.run(tf.global_variables_initializer())
+
+        for step in range(40001):
+            summary, _ = sess.run([merged_summary, optimizer], feed_dict={X: x_training_data, Y: y_training_data})
+            writer.add_summary(summary, global_step=step)
+            if 0 == step % 5000:
+>>>>>>> origin/master
                 loss, acc = sess.run([cost, accuracy], feed_dict={X: x_training_data, Y: y_training_data})
                 print("Step: {:5}\tLoss: {:.3f}\tAcc: {:.2%}".format(step, loss, acc))
 
@@ -94,6 +135,7 @@ with tf.Session() as sess:
         # y_data: (N,1) = flatten => (N, ) matches pred.shape
         for p, y in zip(pred, y_testing_data.flatten()):
             print("[{}] Prediction: {} True Y: {}".format(p == int(y), p, int(y)))
+<<<<<<< HEAD
             temp[0].append(p)
 
 for i in range(TEST_SET):
@@ -123,6 +165,29 @@ for i in sp:
     i.legend(loc=0)
     number += 1
 
+=======
+            # temp[0].append(p)
+
+
+for i in range(TEST_SET):
+    # Y'
+    temp[1].append(120.5+int(temp[0][i]%20))
+    temp[2].append(39.5-int(int(temp[0][i])/20))
+    # Y
+    temp[3].append(120.5+int(y_testing_data[i]%20))
+    temp[4].append(39.5-int(int(y_testing_data[i])/20))
+
+# Show
+fig = plt.figure(0)
+img = plt.imread("map.png")
+ax = fig.gca()
+ax.imshow(img, extent=[120, 140, 20, 40])
+ax.set_xticks(np.arange(120, 141, 10))
+ax.set_yticks(np.arange(20, 41, 10))
+
+plt.scatter(temp[3], temp[4], label='Y', color='b', marker='*', s=100)
+plt.scatter(temp[1], temp[2], label='Y\'', color='r', marker='o', s=70)
+>>>>>>> origin/master
 plt.xlim((120,140))
 plt.ylim((20,40))
 plt.grid()
