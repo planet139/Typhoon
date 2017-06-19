@@ -22,8 +22,8 @@ x_testing_data = xy[-TEST_SET:, :-1]
 y_testing_data = xy[-TEST_SET:, [-1]]
 
 # delete arr, obj, axis(row=0, col=1)
-# x_training_data=np.delete(x_training_data, 0, 1)
-# x_training_data=np.delete(x_training_data, 1, 1)
+x_training_data=np.delete(x_training_data, 0, 1)
+x_testing_data=np.delete(x_testing_data, 0, 1)
 
 X = tf.placeholder(tf.float32, [None, X_ARG])
 Y = tf.placeholder(tf.int32, [None, 1])
@@ -87,7 +87,7 @@ with tf.Session() as sess:
         # writer.add_graph(sess.graph)
         sess.run(tf.global_variables_initializer())
 
-        for step in range(6001):
+        for step in range(8001):
             # summary, _ = sess.run([merged_summary, optimizer], feed_dict={X: x_training_data, Y: y_training_data})
             sess.run(optimizer, feed_dict={X: x_training_data, Y: y_training_data})
             # writer.add_summary(summary, global_step=step)
@@ -132,7 +132,7 @@ for i in sp:
 sp1.title.set_text('2004 07 02')
 sp2.title.set_text('2007 09 16')
 sp3.title.set_text('2010 08 29')
-sp4.title.set_text('2010 09 03')
+sp4.title.set_text('2010 09 05')
 
 plt.xlim((120,140))
 plt.ylim((20,40))
